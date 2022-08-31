@@ -13,12 +13,7 @@ This small script is based on a fork of [clipnotify](https://github.com/cdown/cl
 
 # Installation
 
-```
-git clone https://github.com/Twix53791/clip-daemon/
-cd clip-daemon
-make install
-```
-Or you can do it manually cloning the [andreblanke's repo](https://github.com/andreblanke/clipnotify) and copying in a bin directory the clip-daemon script.
+Clone this repository, and `make install`. Or you can do it manually cloning the [andreblanke's repo](https://github.com/andreblanke/clipnotify) and copying in a bin directory the clip-daemon script.
 
 ## Dependencies
 
