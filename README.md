@@ -13,12 +13,12 @@ This small script is based on a fork of [clipnotify](https://github.com/cdown/cl
 
 ## Installation
 
-Clone this repository, and `make install`. Or you can do it manually cloning the [andreblanke's repo](https://github.com/andreblanke/clipnotify) and copying in a bin directory the clip-daemon script.
+Clone this repository, and `make install`. Or you can do it manually cloning the [andreblanke's repo](https://github.com/andreblanke/clipnotify) and copying in a bin directory the clip-daemon script. Then, run the clip-daemon script at boot, like for example from .xinitrc or bspwmrc : `clip-daemon &`.
 
 ## Dependencies
 
 - `xclip` : to manage the X selection entries
-- `xorg-xinput` : to use the keybindings
+- `xorg-xinput` : to use the keybindings (part of xorg-apps package)
 - `wmctrl` : to set application specific rules
 - `libnotify` : to get notifications
 
