@@ -1,0 +1,109 @@
+#!/bin/bash
+#MADE by: twix
+
+clipboard_notify_apps="Emacs Zathura"
+clip_daemon_notification=1
+
+touchpad_name="ETPS/2 Elantech Touchpad"
+keyboard_name="AT Translated Set 2 keyboard"
+
+fpn="/tmp/primary_notify"
+
+##### FUNCTIONS #####
+
+_primary_to_clipboard (){
+   ctrldown=$(xinput query-state "$keyboard_name" | grep "key\[37\]=down")
+   altdown=$(xinput query-state "$keyboard_name" | grep "key\[64\]=down")
+
+   if [[ -z $ctrldown ]]; then
+      _primary=$(xclip -o -sel pri 2>/dev/null)
+      echo $EPOCHSECONDS > $fpn
+
+      if [[ -n $_primary ]]; then
+         echo -n "$_primary" | xclip -sel clip
+
+         if [[ $clip_daemon_notification == 1 ]]; then
+            [[ ${#_primary} -gt 3000 ]] &&
+               notify-send -t 2000 "copied to clipboard:" "$(echo $_primary | cut -c 1-3000)............." ||
+               notify-send -t 2000 "copied to clipboard:" "$_primary"
+         fi
+
+         [[ -n $altdown ]] && _remove_linebreaks
+
+      fi
+   fi
+}
+
+_remove_linebreaks (){
+# author: Glutanimate (github.com/glutanimate)
+# Parses currently selected text and removes
+# newlines that aren't preceded by a full stop
+
+   SelectedText="$(xclip -o -sel clip)"
+
+   ModifiedText="$(echo "$SelectedText" | \
+       sed 's/\.$/.|/g' | sed 's/^\s*$/|/g' | tr '\n' ' ' | tr '|' '\n')"
+
+   #   - first sed command: replace end-of-line full stops with '|' delimiter and keep original periods.
+   #   - second sed command: replace empty lines with same delimiter (e.g.
+   #     to separate text headings from text)
+   #   - subsequent tr commands: remove existing newlines; replace delimiter with
+   #     newlines
+   # This is less than elegant but it works.
+
+   echo "$ModifiedText" | xclip -sel clip
+}
+
+##### DAEMONS #####
+# These two functions are run in the background
+
+### Triggered by the X primary selection
+# If ctrl is press, _primary_to_clip is disabled
+# The mouse_down loop avoid multiple selections to been
+# copied when a text is continuously selected with the mouse
+
+_primary_notify (){
+
+   while clipnotify -s "primary"; do
+      mousedown=$(xinput query-state "$touchpad_name" | grep "button\[1\]=down")
+      ctrldown=$(xinput query-state "$keyboard_name" | grep "key\[37\]=down")
+
+      if [[ -z $ctrldown ]]; then
+         if [[ -n $mousedown ]]; then
+            until [[ -z $mousedown ]]; do
+               sleep .3
+               mousedown=$(xinput query-state "$touchpad_name" | grep "button\[1\]=down")
+            done
+            _primary_to_clipboard
+          else
+            _primary_to_clipboard
+          fi
+      fi
+   done
+}
+
+#### Triggered when anything is sent to X clipboard
+# If in the second before, a X primary event get received
+#  do nothing, as the _primary_to_clipboard already format
+#  the clipboard
+
+_clipboard_notify (){
+
+   while clipnotify -s "clipboard"; do
+      t=$(< $fpn)
+      if [[ -n $t && $(( $EPOCHSECONDS - $t )) -gt 1 || -z $t ]]; then
+         getapp=$(wmctrl -lx | cut -d" " -f-4 | grep -i $(bspc query -N -n focused))
+
+         [[ $clipboard_notify_apps == *${getapp##*.}* ]] &&
+            _remove_linebreaks &&
+            notify-send -t 1000  "linebreaks removed from copied text"
+      fi
+   done
+}
+
+
+##### SCRIPT #####
+
+_clipboard_notify &
+_primary_notify &
+
