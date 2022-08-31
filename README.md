@@ -11,7 +11,7 @@ This small script is based on a fork of [clipnotify](https://github.com/cdown/cl
 - You can also run _remove_linebreaks automatically when some applications send text directly in the clipboard (for example zathura or emacs pdf-tools). Add the application window class name to the variable `clipboard_notify_apps`. It depends on `wmctrl`
 - You can enable notifications with `clip_daemon_notification=1`. It depends on `libnotify`
 
-# Installation
+## Installation
 
 Clone this repository, and `make install`. Or you can do it manually cloning the [andreblanke's repo](https://github.com/andreblanke/clipnotify) and copying in a bin directory the clip-daemon script.
 
